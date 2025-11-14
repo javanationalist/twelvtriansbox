@@ -1,1 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Booth</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- User Interface -->
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="screen active">
+            <div class="container">
+                <h1>📸 Photo Booth</h1>
+                <p class="subtitle">Selamat datang! Pilih paket sesi Anda</p>
+                <div class="package-cards">
+                    <div class="package-card" data-sessions="1">
+                        <div class="package-badge">Hemat</div>
+                        <h2>1 Sesi</h2>
+                        <div class="price">Rp 5.000</div>
+                        <button class="btn btn-primary" onclick="selectSession(1)">Pilih</button>
+                    </div>
+                    <div class="package-card popular" data-sessions="2">
+                        <div class="package-badge">Populer</div>
+                        <h2>2 Sesi</h2>
+                        <div class="price">Rp 8.000</div>
+                        <button class="btn btn-primary" onclick="selectSession(2)">Pilih</button>
+                    </div>
+                    <div class="package-card" data-sessions="3">
+                        <div class="package-badge">Best Value</div>
+                        <h2>3 Sesi</h2>
+                        <div class="price">Rp 12.000</div>
+                        <button class="btn btn-primary" onclick="selectSession(3)">Pilih</button>
+                    </div>
+                </div>
+                <button class="btn-admin" onclick="showAdminLogin()">Admin</button>
+            </div>
+        </div>
 
+        <!-- Photo Count Selection Screen -->
+        <div id="photoCountScreen" class="screen">
+            <div class="container">
+                <h1>Pilih Jumlah Foto</h1>
+                <p class="subtitle">Berapa banyak foto per sesi?</p>
+                <div class="photo-count-cards">
+                    <div class="photo-count-card" onclick="selectPhotoCount(2)">
+                        <h2>2 Foto</h2>
+                        <p>Per Sesi</p>
+                    </div>
+                    <div class="photo-count-card" onclick="selectPhotoCount(4)">
+                        <h2>4 Foto</h2>
+                        <p>Per Sesi</p>
+                    </div>
+                    <div class="photo-count-card" onclick="selectPhotoCount(6)">
+                        <h2>6 Foto</h2>
+                        <p>Per Sesi</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="goBack('welcomeScreen')">Kembali</button>
+            </div>
+        </div>
+
+        <!-- Camera Screen -->
+        <div id="cameraScreen" class="screen">
+            <div class="camera-container">
+                <div class="camera-header">
+                    <h2>Sesi <span id="currentSession">1</span> dari <span id="totalSessions">1</span></h2>
+                    <p>Foto <span id="currentPhoto">1</span> dari <span id="totalPhotos">2</span></p>
+                </div>
+                <div class="camera-wrapper">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <div id="countdown" class="countdown"></div>
+                    <div id="flash" class="flash"></div>
+                </div>
+                <div class="camera-controls">
+                    <button class="btn btn-capture" id="captureBtn" onclick="startCountdown()">📷 Ambil Foto</button>
+                    <button class="btn btn-secondary" onclick="cancelSession()">Batal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Screen -->
+        <div id="previewScreen" class="screen">
+            <div class="container">
+                <h1>Preview Foto Anda</h1>
+                <div id="photoGrid" class="photo-grid"></div>
+                <div class="preview-controls">
+                    <button class="btn btn-primary" onclick="proceedToPayment()">Lanjut ke Pembayaran</button>
+                    <button class="btn btn-secondary" onclick="retakePhotos()">Ambil Ulang</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Screen -->
+        <div id="paymentScreen" class="screen">
+            <div class="container">
+                <h1>Pembayaran</h1>
+                <div class="payment-info">
+                    <div class="payment-summary">
+                        <p>Total Sesi: <strong><span id="paymentSessions"></span></strong></p>
+                        <p>Total Foto: <strong><span id="paymentPhotos"></span></strong></p>
+                        <p class="total-price">Total: <strong><span id="paymentAmount"></span></strong></p>
+                    </div>
+                    <div id="paymentMethod" class="payment-method"></div>
+                </div>
+                <div class="payment-controls">
+                    <button class="btn btn-primary" onclick="completePayment()">Selesai & Download</button>
+                    <button class="btn btn-secondary" onclick="cancelPayment()">Batal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complete Screen -->
+        <div id="completeScreen" class="screen">
+            <div class="container">
+                <div class="success-icon">✓</div>
+                <h1>Terima Kasih!</h1>
+                <p class="subtitle">Foto Anda siap diunduh</p>
+                <div id="downloadGrid" class="photo-grid"></div>
+                <div class="complete-controls">
+                    <button class="btn btn-primary" onclick="downloadAllPhotos()">Download Semua Foto</button>
+                    <button class="btn btn-secondary" onclick="startOver()">Mulai Lagi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-panel">
+        <!-- Admin Login -->
+        <div id="adminLogin" class="admin-screen active">
+            <div class="admin-container">
+                <h1>Admin Login</h1>
+                <div class="login-form">
+                    <input type="password" id="adminPassword" placeholder="Masukkan password" />
+                    <button class="btn btn-primary" onclick="adminLogin()">Login</button>
+                    <button class="btn btn-secondary" onclick="closeAdmin()">Kembali</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="admin-screen">
+            <div class="admin-header">
+                <h1>Admin Dashboard</h1>
+                <button class="btn btn-secondary" onclick="adminLogout()">Logout</button>
+            </div>
+            
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="showAdminTab('payment')">Konfigurasi Pembayaran</button>
+                <button class="tab-btn" onclick="showAdminTab('gallery')">Galeri Foto</button>
+            </div>
+
+            <!-- Payment Configuration Tab -->
+            <div id="paymentTab" class="admin-tab active">
+                <div class="admin-container">
+                    <h2>Konfigurasi Metode Pembayaran</h2>
+                    <div class="payment-config">
+                        <div class="config-section">
+                            <label>
+                                <input type="radio" name="paymentType" value="qris" onchange="showPaymentConfig('qris')" />
+                                QRIS
+                            </label>
+                            <div id="qrisConfig" class="config-details">
+                                <input type="text" id="qrisCode" placeholder="Kode QRIS atau URL" />
+                                <input type="file" id="qrisImage" accept="image/*" onchange="uploadQRIS()" />
+                                <div id="qrisPreview" class="qris-preview"></div>
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <label>
+                                <input type="radio" name="paymentType" value="bank" onchange="showPaymentConfig('bank')" />
+                                Rekening Bank
+                            </label>
+                            <div id="bankConfig" class="config-details">
+                                <input type="text" id="bankName" placeholder="Nama Bank" />
+                                <input type="text" id="bankAccount" placeholder="Nomor Rekening" />
+                                <input type="text" id="bankHolder" placeholder="Nama Pemilik" />
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <label>
+                                <input type="radio" name="paymentType" value="ewallet" onchange="showPaymentConfig('ewallet')" />
+                                E-Wallet
+                            </label>
+                            <div id="ewalletConfig" class="config-details">
+                                <select id="ewalletType">
+                                    <option value="">Pilih E-Wallet</option>
+                                    <option value="gopay">GoPay</option>
+                                    <option value="ovo">OVO</option>
+                                    <option value="dana">DANA</option>
+                                    <option value="shopeepay">ShopeePay</option>
+                                </select>
+                                <input type="text" id="ewalletNumber" placeholder="Nomor E-Wallet" />
+                                <input type="text" id="ewalletName" placeholder="Nama Pemilik" />
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <label>
+                                <input type="radio" name="paymentType" value="va" onchange="showPaymentConfig('va')" />
+                                Virtual Account
+                            </label>
+                            <div id="vaConfig" class="config-details">
+                                <input type="text" id="vaBank" placeholder="Nama Bank" />
+                                <input type="text" id="vaNumber" placeholder="Nomor Virtual Account" />
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <label>
+                                <input type="radio" name="paymentType" value="cashier" onchange="showPaymentConfig('cashier')" />
+                                Kasir
+                            </label>
+                            <div id="cashierConfig" class="config-details">
+                                <input type="text" id="cashierLocation" placeholder="Lokasi Kasir" />
+                                <textarea id="cashierInstructions" placeholder="Instruksi tambahan"></textarea>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="savePaymentConfig()">Simpan Konfigurasi</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery Tab -->
+            <div id="galleryTab" class="admin-tab">
+                <div class="admin-container">
+                    <h2>Galeri Foto</h2>
+                    <div class="gallery-controls">
+                        <input type="text" id="searchBox" placeholder="Cari berdasarkan tanggal/waktu (contoh: 14/11/2025 atau 14:30)" onkeyup="searchPhotos()" />
+                        <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+                    </div>
+                    <div id="adminGallery" class="admin-gallery"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
